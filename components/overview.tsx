@@ -1,7 +1,4 @@
 import { motion } from 'framer-motion';
-import Link from 'next/link';
-
-import { MessageIcon, VercelIcon } from './icons';
 
 export const Overview = () => {
   return (
@@ -15,11 +12,11 @@ export const Overview = () => {
     >
       <div className="rounded-xl p-6 flex flex-col gap-8 leading-relaxed text-center max-w-xl">
         <p className="flex flex-row justify-center gap-4 items-center">
-          <VercelIcon size={32} />
-          <span>+</span>
-          <MessageIcon size={32} />
+          {/* <VercelIcon size={32} /> */}
+          <span>Internal Chatbot for EP</span>
+          {/* <MessageIcon size={32} /> */}
         </p>
-        <p>
+        {/* <p>
           This is an{' '}
           <Link
             className="font-medium underline underline-offset-4"
@@ -34,8 +31,8 @@ export const Overview = () => {
           function in the server and the{' '}
           <code className="rounded-md bg-muted px-1 py-0.5">useChat</code> hook
           on the client to create a seamless chat experience.
-        </p>
-        <p>
+        </p> */}
+        {/* <p>
           You can learn more about the AI SDK by visiting the{' '}
           <Link
             className="font-medium underline underline-offset-4"
@@ -45,7 +42,7 @@ export const Overview = () => {
             docs
           </Link>
           .
-        </p>
+        </p> */}
       </div>
     </motion.div>
   );

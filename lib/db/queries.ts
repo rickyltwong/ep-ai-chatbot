@@ -1,5 +1,3 @@
-import 'server-only';
-
 import { genSaltSync, hashSync } from 'bcrypt-ts';
 import { and, asc, desc, eq, gt, gte, inArray } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/postgres-js';
@@ -15,19 +13,41 @@ import {
   message,
   vote,
   type DBMessage,
+  users,
 } from './schema';
-import { ArtifactKind } from '@/components/artifact';
+import type { ArtifactKind } from '@/components/artifact';
 
 // Optionally, if not using email/pass login, you can
 // use the Drizzle adapter for Auth.js / NextAuth
 // https://authjs.dev/reference/adapter/drizzle
 
 // biome-ignore lint: Forbidden non-null assertion.
-const client = postgres(process.env.POSTGRES_URL!);
-const db = drizzle(client);
+const client = postgres(process.env.POSTGRES_URL!, {
+  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : undefined,
+  max: 10, // Maximum number of connections
+  idle_timeout: 30, // Closes idle connections after 30 seconds
+  connect_timeout: 15, // Connection timeout after 15 seconds
+});
+export const db = drizzle(client);
 
 export async function getUser(email: string): Promise<Array<User>> {
   try {
+    // First try to get from users table (Auth.js)
+    const authUsers = await db.select().from(users).where(eq(users.email, email));
+    
+    if (authUsers.length > 0) {
+      // Get from custom User table to get the password
+      const customUsers = await db.select().from(user).where(eq(user.email, email));
+      
+      // Merge the data from both tables
+      return authUsers.map(authUser => ({
+        ...authUser,
+        // Add password from custom user if it exists
+        password: customUsers.find(u => u.email === email)?.password || null
+      })) as User[];
+    }
+    
+    // Fallback to old custom User table
     return await db.select().from(user).where(eq(user.email, email));
   } catch (error) {
     console.error('Failed to get user from database');
@@ -38,9 +58,23 @@ export async function getUser(email: string): Promise<Array<User>> {
 export async function createUser(email: string, password: string) {
   const salt = genSaltSync(10);
   const hash = hashSync(password, salt);
+  const id = crypto.randomUUID(); // Generate a UUID for the user
 
   try {
-    return await db.insert(user).values({ email, password: hash });
+    // Insert into Auth.js users table
+    await db.insert(users).values({ 
+      id, 
+      email,
+      // Auth.js requires these fields
+      emailVerified: null
+    });
+    
+    // Insert into custom User table for password storage
+    return await db.insert(user).values({ 
+      id, 
+      email, 
+      password: hash 
+    });
   } catch (error) {
     console.error('Failed to create user in database');
     throw error;
@@ -346,6 +380,71 @@ export async function updateChatVisiblityById({
     return await db.update(chat).set({ visibility }).where(eq(chat.id, chatId));
   } catch (error) {
     console.error('Failed to update chat visibility in database');
+    throw error;
+  }
+}
+
+// This function saves a user from Auth.js to our custom User table
+export async function saveUser({
+  id,
+  email,
+}: {
+  id: string;
+  email: string;
+}) {
+  try {
+    
+    // Insert into custom User table
+    await db.insert(user).values({
+      id,
+      email,
+    }).onConflictDoNothing();
+    
+    // Ensure the user is also in the Auth.js users table
+    return await db.insert(users).values({
+      id,
+      email,
+      emailVerified: null
+    }).onConflictDoNothing();
+  } catch (error) {
+    console.error('Failed to save user to custom User table:', error);
+    throw error;
+  }
+}
+
+export async function saveUserWithPassword({
+  id,
+  email,
+  password,
+  name,
+}: {
+  id: string;
+  email: string;
+  password: string;
+  name?: string;
+}) {
+  try {
+    const salt = genSaltSync(10);
+    const hash = hashSync(password, salt);
+    
+    // Insert into the app's original user table
+    await db.insert(user).values({
+      id,
+      email,
+      password: hash,
+    }).onConflictDoNothing();
+    
+    // Insert into the Auth.js users table to keep both in sync
+    await db.insert(users).values({
+      id,
+      email,
+      name,
+      emailVerified: null
+    }).onConflictDoNothing();
+    
+    return { success: true };
+  } catch (error) {
+    console.error('Failed to save user with password in database', error);
     throw error;
   }
 }

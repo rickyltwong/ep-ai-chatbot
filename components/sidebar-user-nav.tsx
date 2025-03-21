@@ -48,6 +48,18 @@ export function SidebarUserNav({ user }: { user: User }) {
             >
               {`Toggle ${theme === 'light' ? 'dark' : 'light'} mode`}
             </DropdownMenuItem>
+            
+            {user.email === process.env.ADMIN_USER && (
+              <>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem asChild>
+                  <a href="/admin" className="w-full cursor-pointer">
+                    Admin Panel
+                  </a>
+                </DropdownMenuItem>
+              </>
+            )}
+            
             <DropdownMenuSeparator />
             <DropdownMenuItem asChild>
               <button

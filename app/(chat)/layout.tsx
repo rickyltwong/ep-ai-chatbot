@@ -15,6 +15,11 @@ export default async function Layout({
   const [session, cookieStore] = await Promise.all([auth(), cookies()]);
   const isCollapsed = cookieStore.get('sidebar:state')?.value !== 'true';
 
+  // Warning in development if no session found
+  if (!session?.user && process.env.NODE_ENV === 'development') {
+    console.warn("No user session found in layout - auth may not be working correctly");
+  }
+
   return (
     <>
       <Script

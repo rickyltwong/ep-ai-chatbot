@@ -1,7 +1,5 @@
 import {
   customProvider,
-  extractReasoningMiddleware,
-  wrapLanguageModel,
 } from 'ai';
 // import { groq } from '@ai-sdk/groq';
 // import { xai } from '@ai-sdk/xai';

@@ -4,6 +4,7 @@ export const authConfig = {
   pages: {
     signIn: '/login',
     newUser: '/',
+    error: '/login',
   },
   providers: [
     // added later in auth.ts since it requires bcrypt which is only compatible with Node.js
@@ -12,28 +13,46 @@ export const authConfig = {
   callbacks: {
     authorized({ auth, request: { nextUrl } }) {
       const isLoggedIn = !!auth?.user;
-      const isOnChat = nextUrl.pathname.startsWith('/');
-      const isOnRegister = nextUrl.pathname.startsWith('/register');
+      const isOnRoot = nextUrl.pathname === '/';
       const isOnLogin = nextUrl.pathname.startsWith('/login');
+      const isOnRegister = nextUrl.pathname.startsWith('/register');
+      const isAuthCallback = nextUrl.pathname.startsWith('/api/auth');
+      const isOnAdmin = nextUrl.pathname.startsWith('/admin');
 
+      // Always allow auth callbacks to proceed
+      if (isAuthCallback) {
+        return true;
+      }
+
+      // Admin page restrictions - only allow process.env.ADMIN_USER
+      if (isOnAdmin) {
+        if (isLoggedIn && auth?.user?.email === process.env.ADMIN_USER) {
+          return true;
+        }
+        // Redirect to login if not logged in, otherwise to home if not authorized
+        return isLoggedIn 
+          ? Response.redirect(new URL('/', nextUrl as unknown as URL))
+          : Response.redirect(new URL('/login', nextUrl as unknown as URL));
+      }
+
+      // Redirect authenticated users away from login/register
       if (isLoggedIn && (isOnLogin || isOnRegister)) {
         return Response.redirect(new URL('/', nextUrl as unknown as URL));
       }
 
+      // Allow access to login and register pages for non-authenticated users
       if (isOnRegister || isOnLogin) {
-        return true; // Always allow access to register and login pages
+        return true;
       }
 
-      if (isOnChat) {
-        if (isLoggedIn) return true;
-        return false; // Redirect unauthenticated users to login page
-      }
-
+      // For the root path and other protected routes, check authentication
       if (isLoggedIn) {
-        return Response.redirect(new URL('/', nextUrl as unknown as URL));
+        return true;
+      } else if (isOnRoot) {
+        return Response.redirect(new URL('/login', nextUrl as unknown as URL));
       }
 
-      return true;
+      return false;
     },
   },
 } satisfies NextAuthConfig;

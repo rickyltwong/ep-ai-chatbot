@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useActionState, useEffect, useState } from 'react';
 
 import { AuthForm } from '@/components/auth-form';
@@ -12,6 +12,8 @@ import { toast } from '@/components/toast';
 
 export default function Page() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const error = searchParams.get('error');
 
   const [email, setEmail] = useState('');
   const [isSuccessful, setIsSuccessful] = useState(false);
@@ -24,6 +26,16 @@ export default function Page() {
   );
 
   useEffect(() => {
+    // Handle URL error parameters
+    if (error === 'AccessDenied') {
+      toast({
+        type: 'error',
+        description: 'Only ep.org.hk email addresses are allowed.',
+      });
+    }
+  }, [error]);
+
+  useEffect(() => {
     if (state.status === 'user_exists') {
       toast({ type: 'error', description: 'Account already exists!' });
     } else if (state.status === 'failed') {
@@ -32,6 +44,11 @@ export default function Page() {
       toast({
         type: 'error',
         description: 'Failed validating your submission!',
+      });
+    } else if (state.status === 'invalid_domain') {
+      toast({
+        type: 'error',
+        description: 'Only emails from ep.org.hk domain are allowed!',
       });
     } else if (state.status === 'success') {
       toast({ type: 'success', description: 'Account created successfully!' });
@@ -54,6 +71,14 @@ export default function Page() {
           <p className="text-sm text-gray-500 dark:text-zinc-400">
             Create an account with your email and password
           </p>
+          <p className="text-xs font-medium text-amber-600 dark:text-amber-400 mt-2">
+            Note: Only @ep.org.hk email addresses are allowed
+          </p>
+          {error === 'AccessDenied' && (
+            <div className="mt-4 p-3 bg-red-100 dark:bg-red-900 border border-red-300 dark:border-red-800 rounded-md text-red-800 dark:text-red-200 text-sm">
+              <strong>Access denied!</strong> Only email addresses from @ep.org.hk domain are allowed. Please use your company email address.
+            </div>
+          )}
         </div>
         <AuthForm action={handleSubmit} defaultEmail={email}>
           <SubmitButton isSuccessful={isSuccessful}>Sign Up</SubmitButton>
