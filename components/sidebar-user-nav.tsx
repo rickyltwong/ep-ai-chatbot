@@ -48,7 +48,7 @@ export function SidebarUserNav({ user }: { user: User }) {
             >
               {`Toggle ${theme === 'light' ? 'dark' : 'light'} mode`}
             </DropdownMenuItem>
-            
+
             {user.email === process.env.ADMIN_USER && (
               <>
                 <DropdownMenuSeparator />
@@ -59,7 +59,7 @@ export function SidebarUserNav({ user }: { user: User }) {
                 </DropdownMenuItem>
               </>
             )}
-            
+
             <DropdownMenuSeparator />
             <DropdownMenuItem asChild>
               <button

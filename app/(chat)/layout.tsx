@@ -17,7 +17,9 @@ export default async function Layout({
 
   // Warning in development if no session found
   if (!session?.user && process.env.NODE_ENV === 'development') {
-    console.warn("No user session found in layout - auth may not be working correctly");
+    console.warn(
+      'No user session found in layout - auth may not be working correctly',
+    );
   }
 
   return (

@@ -30,7 +30,7 @@ export const authConfig = {
           return true;
         }
         // Redirect to login if not logged in, otherwise to home if not authorized
-        return isLoggedIn 
+        return isLoggedIn
           ? Response.redirect(new URL('/', nextUrl as unknown as URL))
           : Response.redirect(new URL('/login', nextUrl as unknown as URL));
       }

@@ -76,7 +76,9 @@ export default function Page() {
           </p>
           {error === 'AccessDenied' && (
             <div className="mt-4 p-3 bg-red-100 dark:bg-red-900 border border-red-300 dark:border-red-800 rounded-md text-red-800 dark:text-red-200 text-sm">
-              <strong>Access denied!</strong> Only email addresses from @ep.org.hk domain are allowed. Please use your company email address.
+              <strong>Access denied!</strong> Only email addresses from
+              @ep.org.hk domain are allowed. Please use your company email
+              address.
             </div>
           )}
         </div>

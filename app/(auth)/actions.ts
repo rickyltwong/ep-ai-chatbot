@@ -7,14 +7,23 @@ import { getUser, saveUserWithPassword } from '@/lib/db/queries';
 import { signIn } from './auth';
 
 const authFormSchema = z.object({
-  email: z.string().email().refine(email => email.endsWith('@ep.org.hk'), {
-    message: "Only emails from ep.org.hk domain are allowed"
-  }),
+  email: z
+    .string()
+    .email()
+    .refine((email) => email.endsWith('@ep.org.hk'), {
+      message: 'Only emails from ep.org.hk domain are allowed',
+    }),
   password: z.string().min(6),
 });
 
 export interface LoginActionState {
-  status: 'idle' | 'in_progress' | 'success' | 'failed' | 'invalid_data' | 'invalid_domain';
+  status:
+    | 'idle'
+    | 'in_progress'
+    | 'success'
+    | 'failed'
+    | 'invalid_data'
+    | 'invalid_domain';
 }
 
 export const login = async (
@@ -23,12 +32,12 @@ export const login = async (
 ): Promise<LoginActionState> => {
   try {
     const emailValue = formData.get('email') as string;
-    
+
     // Pre-check domain before validation
     if (!emailValue.endsWith('@ep.org.hk')) {
       return { status: 'invalid_domain' };
     }
-    
+
     const validatedData = authFormSchema.parse({
       email: emailValue,
       password: formData.get('password'),
@@ -41,7 +50,7 @@ export const login = async (
     });
 
     if (result?.error) {
-      console.error("Login failed:", result.error);
+      console.error('Login failed:', result.error);
       return { status: 'failed' };
     }
 
@@ -72,12 +81,12 @@ export const register = async (
 ): Promise<RegisterActionState> => {
   try {
     const emailValue = formData.get('email') as string;
-    
+
     // Pre-check domain before validation
     if (!emailValue.endsWith('@ep.org.hk')) {
       return { status: 'invalid_domain' };
     }
-    
+
     const validatedData = authFormSchema.parse({
       email: emailValue,
       password: formData.get('password'),
@@ -88,10 +97,10 @@ export const register = async (
     if (users.length > 0) {
       return { status: 'user_exists' } as RegisterActionState;
     }
-    
+
     // Generate a UUID for the user
     const userId = crypto.randomUUID();
-    
+
     // Use saveUserWithPassword to ensure both tables are updated
     await saveUserWithPassword({
       id: userId,
@@ -100,7 +109,7 @@ export const register = async (
       // Optionally, extract name from email
       name: validatedData.email.split('@')[0],
     });
-    
+
     // Try to sign in with the new credentials
     const result = await signIn('credentials', {
       email: validatedData.email,
@@ -109,7 +118,7 @@ export const register = async (
     });
 
     if (result?.error) {
-      console.error("Login after registration failed:", result.error);
+      console.error('Login after registration failed:', result.error);
       return { status: 'success' }; // Still return success for registration
     }
 
@@ -127,12 +136,12 @@ export const register = async (
 export async function signInWithGoogle() {
   try {
     // Set callbackUrl without any query parameters
-    await signIn("google", { 
-      callbackUrl: "/",
-      redirect: true
+    await signIn('google', {
+      callbackUrl: '/',
+      redirect: true,
     });
   } catch (error) {
-    console.error("Error during Google sign-in:", error);
+    console.error('Error during Google sign-in:', error);
     throw error; // Re-throw to allow handling in the UI
   }
 }

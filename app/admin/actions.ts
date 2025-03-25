@@ -1,7 +1,7 @@
 'use server';
 
 import { auth } from '@/app/(auth)/auth';
-import { saveUserWithPassword, } from '@/lib/db/queries';
+import { saveUserWithPassword } from '@/lib/db/queries';
 import { generateUUID } from '@/lib/utils';
 
 // These imports are safe in a server component/action
@@ -16,7 +16,7 @@ interface RegisterResult {
 export async function registerUser({
   email,
   password,
-  name
+  name,
 }: {
   email: string;
   password: string;
@@ -39,8 +39,11 @@ export async function registerUser({
 
     // Check if user already exists in either table
     const appUsers = await db.select().from(user).where(eq(user.email, email));
-    const authUsers = await db.select().from(users).where(eq(users.email, email));
-    
+    const authUsers = await db
+      .select()
+      .from(users)
+      .where(eq(users.email, email));
+
     if (appUsers.length > 0 || authUsers.length > 0) {
       return { status: 'user_exists' };
     }
@@ -51,7 +54,7 @@ export async function registerUser({
       id: userId,
       email,
       password,
-      name
+      name,
     });
 
     console.log('User registered successfully:', email);
@@ -75,25 +78,28 @@ export async function getAllUsers() {
     // Get users from both tables
     const appUsers = await db.select().from(user);
     const authUsers = await db.select().from(users);
-    
+
     // Combine and deduplicate users based on email
-    const combinedUsers = [...appUsers, ...authUsers.map(u => ({
-      id: u.id,
-      email: u.email,
-      name: u.name || undefined
-    }))];
-    
+    const combinedUsers = [
+      ...appUsers,
+      ...authUsers.map((u) => ({
+        id: u.id,
+        email: u.email,
+        name: u.name || undefined,
+      })),
+    ];
+
     // Deduplicate by email
     const uniqueUsers = Array.from(
-      new Map(combinedUsers.map(user => [user.email, user])).values()
+      new Map(combinedUsers.map((user) => [user.email, user])).values(),
     );
-    
-    return { 
-      status: 'success', 
-      users: uniqueUsers.sort((a, b) => a.email.localeCompare(b.email))
+
+    return {
+      status: 'success',
+      users: uniqueUsers.sort((a, b) => a.email.localeCompare(b.email)),
     };
   } catch (error) {
     console.error('Error fetching users:', error);
     return { status: 'failed', users: [] };
   }
-} 
+}

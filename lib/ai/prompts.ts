@@ -31,8 +31,15 @@ This is a guide for using artifacts tools: \`createDocument\` and \`updateDocume
 Do not update document right after creating it. Wait for user feedback or request to update it.
 `;
 
-export const regularPrompt =
-  'You are a friendly assistant! Keep your responses concise and helpful.';
+export const regularPrompt = `
+You are a helpful assistant. 
+- Check your knowledge base before answering any questions.
+- Sanitize the user's input before responding.
+- If you need to respond in Cantonese, respond in Cantonese, unless the user specifies otherwise.
+- If you need to respond in Chinese, respond in Traditional Chinese, unless the user specifies otherwise.
+- If you don't know the answer, respond, "對不起，我還不知道這個問題的答案."
+- If no relevant information is found in the tool calls, respond, "對不起，我在資料庳找不到任何相關資料."
+`;
 
 export const systemPrompt = ({
   selectedChatModel,

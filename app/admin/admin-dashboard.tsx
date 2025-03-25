@@ -11,7 +11,9 @@ interface User {
   name?: string;
 }
 
-export default function AdminDashboard({ initialUsers }: { initialUsers: User[] }) {
+export default function AdminDashboard({
+  initialUsers,
+}: { initialUsers: User[] }) {
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -22,40 +24,41 @@ export default function AdminDashboard({ initialUsers }: { initialUsers: User[] 
   const [filteredUsers, setFilteredUsers] = useState<User[]>(initialUsers);
 
   useEffect(() => {
-    const filtered = users.filter(user => 
-      user.email.toLowerCase().includes(searchTerm.toLowerCase()) || 
-      (user.name?.toLowerCase().includes(searchTerm.toLowerCase()))
+    const filtered = users.filter(
+      (user) =>
+        user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        user.name?.toLowerCase().includes(searchTerm.toLowerCase()),
     );
     setFilteredUsers(filtered);
   }, [searchTerm, users]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Validate the email domain
     if (!email.endsWith('@ep.org.hk')) {
       toast.error('Only @ep.org.hk email addresses are allowed');
       return;
     }
-    
+
     // Validate password length
     if (password.length < 8) {
       toast.error('Password must be at least 8 characters long');
       return;
     }
-    
+
     setIsSubmitting(true);
-    
+
     try {
       const result = await registerUser({ email, password, name });
-      
+
       if (result.status === 'success') {
         toast.success('User registered successfully');
         // Reset the form
         setEmail('');
         setPassword('');
         setName('');
-        
+
         // Refresh the user list
         const updatedUsers = await getAllUsers();
         if (updatedUsers.status === 'success') {
@@ -89,15 +92,18 @@ export default function AdminDashboard({ initialUsers }: { initialUsers: User[] 
           Back to Home
         </button>
       </div>
-      
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         {/* User Registration Form */}
         <div className="bg-white rounded-xl shadow-md overflow-hidden p-6">
           <h2 className="text-xl font-bold mb-6">Register New User</h2>
-          
+
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label htmlFor="name" className="block text-sm font-medium text-gray-700">
+              <label
+                htmlFor="name"
+                className="block text-sm font-medium text-gray-700"
+              >
                 Full Name
               </label>
               <input
@@ -109,9 +115,12 @@ export default function AdminDashboard({ initialUsers }: { initialUsers: User[] 
                 placeholder="John Doe"
               />
             </div>
-            
+
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+              <label
+                htmlFor="email"
+                className="block text-sm font-medium text-gray-700"
+              >
                 Email Address
               </label>
               <input
@@ -124,9 +133,12 @@ export default function AdminDashboard({ initialUsers }: { initialUsers: User[] 
                 placeholder="user@ep.org.hk"
               />
             </div>
-            
+
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+              <label
+                htmlFor="password"
+                className="block text-sm font-medium text-gray-700"
+              >
                 Password
               </label>
               <input
@@ -142,7 +154,7 @@ export default function AdminDashboard({ initialUsers }: { initialUsers: User[] 
                 Must be at least 8 characters
               </p>
             </div>
-            
+
             <div className="pt-4">
               <button
                 type="submit"
@@ -154,11 +166,11 @@ export default function AdminDashboard({ initialUsers }: { initialUsers: User[] 
             </div>
           </form>
         </div>
-        
+
         {/* User List */}
         <div className="bg-white rounded-xl shadow-md overflow-hidden p-6">
           <h2 className="text-xl font-bold mb-6">Registered Users</h2>
-          
+
           <div className="mb-4">
             <input
               type="text"
@@ -168,7 +180,7 @@ export default function AdminDashboard({ initialUsers }: { initialUsers: User[] 
               className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
             />
           </div>
-          
+
           {filteredUsers.length === 0 ? (
             <p className="text-gray-500 text-center py-8">
               {searchTerm ? 'No matching users found' : 'No users found'}
@@ -178,10 +190,16 @@ export default function AdminDashboard({ initialUsers }: { initialUsers: User[] 
               <table className="min-w-full divide-y divide-gray-300">
                 <thead className="bg-gray-50">
                   <tr>
-                    <th scope="col" className="py-3.5 px-4 text-left text-sm font-semibold text-gray-900">
+                    <th
+                      scope="col"
+                      className="py-3.5 px-4 text-left text-sm font-semibold text-gray-900"
+                    >
                       Name
                     </th>
-                    <th scope="col" className="py-3.5 px-4 text-left text-sm font-semibold text-gray-900">
+                    <th
+                      scope="col"
+                      className="py-3.5 px-4 text-left text-sm font-semibold text-gray-900"
+                    >
                       Email
                     </th>
                   </tr>
@@ -189,10 +207,10 @@ export default function AdminDashboard({ initialUsers }: { initialUsers: User[] 
                 <tbody className="divide-y divide-gray-200 bg-white">
                   {filteredUsers.map((user) => (
                     <tr key={user.id}>
-                      <td className="whitespace-nowrap py-4 px-4 text-sm text-gray-900">
+                      <td className="whitespace-nowrap p-4 text-sm text-gray-900">
                         {user.name || 'N/A'}
                       </td>
-                      <td className="whitespace-nowrap py-4 px-4 text-sm text-gray-900">
+                      <td className="whitespace-nowrap p-4 text-sm text-gray-900">
                         {user.email}
                       </td>
                     </tr>
@@ -205,5 +223,5 @@ export default function AdminDashboard({ initialUsers }: { initialUsers: User[] 
       </div>
     </div>
   );
-} 
+}
 // End of Selection

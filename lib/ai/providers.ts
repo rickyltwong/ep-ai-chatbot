@@ -1,6 +1,4 @@
-import {
-  customProvider,
-} from 'ai';
+import { customProvider } from 'ai';
 // import { groq } from '@ai-sdk/groq';
 // import { xai } from '@ai-sdk/xai';
 import { fal } from '@ai-sdk/fal';
@@ -12,8 +10,6 @@ import {
   reasoningModel,
   titleModel,
 } from './models.test';
-
-
 
 export const myProvider = isTestEnvironment
   ? customProvider({
