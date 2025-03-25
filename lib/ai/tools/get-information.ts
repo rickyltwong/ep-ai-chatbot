@@ -26,17 +26,23 @@ const sanitizeInput = (input: string): string => {
     sanitized = sanitized.substring(0, MAX_LENGTH);
   }
   
-  // 3. Remove only potentially harmful characters while preserving Unicode
-  // This regex only removes control characters and some specific potentially dangerous characters
-  sanitized = sanitized
-    .replace(/[\u0000-\u001F\u007F-\u009F\u2028\u2029]/g, '') // Remove control characters
+  // 3. Filter out control characters using character code checking
+  let result = '';
+  for (let i = 0; i < sanitized.length; i++) {
+    const code = sanitized.charCodeAt(i);
+    // Skip control characters (0-31 and 127-159)
+    if ((code >= 32 && code <= 126) || code >= 160) {
+      result += sanitized.charAt(i);
+    }
+  }
+  
+  // 4. Replace newlines and clean up spaces
+  result = result
     .replace(/(\r\n|\n|\r)/gm, ' ') // Replace newlines with spaces
-    .replace(/\s+/g, ' ') // Replace multiple spaces with a single space
-    .replace(/;/g, ''); // Remove semicolons (basic SQLi protection)
+    .replace(/\s+/g, ' ')          // Replace multiple spaces with a single space
+    .replace(/;/g, '');            // Remove semicolons (basic SQLi protection)
   
-  // No need to escape quotes as your ORM should handle parameterized queries
-  
-  return sanitized;
+  return result;
 };
 
 export const getInformation = tool({
